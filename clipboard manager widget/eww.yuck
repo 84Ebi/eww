@@ -1,0 +1,39 @@
+;; Poll clipboard history 
+(defpoll clipboard-history :interval "1s" :initial "[]" "bash ~/.config/eww/scripts/clipboard_history.sh")
+
+
+;; ** Widgets *************************************************************************
+(defwidget back []
+  (box :class "countdown-box" :orientation "vertical" :space-evenly false :vexpand "false" :hexpand "false"))
+(defwidget clipboard-widget []
+  (box :class "clipboard-outer" :orientation "vertical" :space-evenly false
+    (label :class "clipboard-title" :text "Clipboard" :halign "center")
+    (scroll :height 550 :vscroll true
+      (box :class "clipboard-inner" :orientation "vertical" :space-evenly false
+        ;; Map over clipboard-history (lines of text)
+        (for entry in clipboard-history
+          (button :class "clipboard-item"
+                  :onclick `echo '${entry}' | bash ~/.config/eww/scripts/clipboard_copy.sh`
+                  (label :class "clipboard-label" :text entry :wrap "true" :limit-width 250 :halign "start")))))))
+
+
+
+;; ** Windows *************************************************************************
+
+(defwindow clipboard_window
+  :monitor 0
+  :geometry (geometry :x "115px" :y "330" :width "300px" :height "100px")
+  :stacking "bg"
+  :reserve (struts :distance "80px" :side "top")
+  :windowtype "dock"
+  :wm-ignore false
+  (clipboard-widget))
+
+(defwindow clipboard_background
+  :monitor 0
+  :geometry (geometry :x "100" :y "320" :width "330px" :height "600px")
+  :stacking "bg"
+  :reserve (struts :distance "80px" :side "top")
+  :windowtype "dock"
+  :wm-ignore false
+  (back))

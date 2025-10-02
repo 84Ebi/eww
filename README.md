@@ -1,1 +1,2 @@
-# eww
+# clipboard manager widget using eww
+
