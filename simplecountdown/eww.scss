@@ -1,0 +1,32 @@
+* {
+  all: unset;
+}
+
+/* Countdown Widget Styles */
+
+/*
+ * A modern, dark theme for the countdown widget.
+ * Font suggestion: "JetBrains Mono" or "Fira Code" for a clean look.
+ */
+
+.countdown-box {
+	background-color: #1e1e2e;
+	color: #cdd6f4;
+	padding: 1rem;
+	border-radius: 16px;
+}
+
+.countdown-title {
+    font-family: "Zira Code", monospace;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #424d5e;
+    margin-bottom: 5px;
+}
+
+.countdown-label {
+    font-family: "Zira Code", monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #a6e3a1;
+}

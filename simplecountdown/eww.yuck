@@ -1,0 +1,19 @@
+;; ** Variables ***********************************************************************
+(defpoll DAY_COUNTDOWN :interval "60s" `bash /home/ebi/.config/eww/scripts/day_countdown.sh 2025-11-17`)
+
+;; ** Widgets *************************************************************************
+(defwidget countdown []
+  (box :class "countdown-box" :orientation "vertical" :space-evenly false :vexpand "false" :hexpand "false"
+    (label :class "countdown-title" :text "SSL renew" :halign "center")
+    (label :class "countdown-label" :halign "center" :wrap "true" :limit-width 200 :text DAY_COUNTDOWN)))
+
+
+;; ** Windows *************************************************************************
+(defwindow countdown
+  :monitor 0
+  :geometry (geometry :x "100px" :y "120px" :width "200px" :height "80px")
+  :stacking "bg"
+  :reserve (struts :distance "80px" :side "top")
+  :windowtype "dock"
+  :wm-ignore false
+  (countdown))

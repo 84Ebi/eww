@@ -1,26 +1,31 @@
-# Clipboard Manager Widget for Eww
+# Simple Day Countdown Widget for Eww
 
-A clipboard history manager widget built with [Eww (ElKowars wacky widgets)](https://github.com/elkowar/eww) that tracks and displays your clipboard history with a clean, modern interface.
+A minimalist, lightweight countdown widget built with [Eww (ElKowars wacky widgets)](https://github.com/elkowar/eww) that displays the days remaining until your important dates with a clean, modern dark theme.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Features
 
-- 📋 **Clipboard History Tracking** - Automatically saves up to 40 clipboard entries
-- 🔄 **Cross-Platform Support** - Works with Wayland (`wl-clipboard`) and X11 (`xclip`/`xsel`)
-- 🎨 **Modern UI** - Catppuccin-inspired color scheme with smooth scrolling
-- 💾 **Persistent Storage** - History saved as base64-encoded entries
-- ⚡ **Fast Access** - One-click to restore any previous clipboard entry
-- 🔒 **Safe Encoding** - Handles special characters and multiline text
+- ⏰ **Simple Day Counter** - Shows exactly how many days left until target date
+- 🎯 **Multiple Countdowns** - Track multiple events simultaneously
+- 🎨 **Dark Modern UI** - Catppuccin-inspired color scheme with rounded corners
+- 📅 **Easy Configuration** - One-line date format (YYYY-MM-DD)
+- 🔄 **Auto-refresh** - Updates every 60 seconds
+- ⚡ **Lightweight** - Minimal resource usage
+- 💾 **Persistent Display** - Stays visible as a dock window
+
+## Screenshots
+
+The widget displays:
+- Event title (e.g., "SSL renew", "cPanel renew")
+- Days remaining in a clean, readable format
+- Automatically shows "Expired" when the date passes
 
 ## Prerequisites
 
 - [Eww](https://github.com/elkowar/eww) (ElKowars wacky widgets)
-- Clipboard utilities:
-  - **Wayland**: `wl-clipboard` (recommended)
-  - **X11**: `xclip` or `xsel`
-- `jq` (recommended for JSON processing) or `python3` (fallback)
-- `base64` (usually pre-installed)
+- `bash` (usually pre-installed)
+- `date` command (GNU coreutils)
 
 ## Installation
 
@@ -28,134 +33,316 @@ A clipboard history manager widget built with [Eww (ElKowars wacky widgets)](htt
 ```bash
 git clone https://github.com/84Ebi/eww.git
 cd eww
-git checkout clipboard-manager
+git checkout simpledaycountdown
 ```
 
-2. Copy the widget files to your Eww config directory:
+2. Copy the script to your Eww scripts directory:
 ```bash
 mkdir -p ~/.config/eww/scripts
-cp "clipboard manager widget/scripts/"* ~/.config/eww/scripts/
-chmod +x ~/.config/eww/scripts/clipboard_*.sh
+cp simplecountdown/scripts/day_countdown.sh ~/.config/eww/scripts/
+chmod +x ~/.config/eww/scripts/day_countdown.sh
 ```
 
 3. Add the widget configuration to your `~/.config/eww/eww.yuck`:
 ```yuck
-;; Poll clipboard history 
-(defpoll clipboard-history :interval "1s" :initial "[]" 
-  "bash ~/.config/eww/scripts/clipboard_history.sh")
+;; Day Countdown Variable
+(defpoll DAY_COUNTDOWN :interval "60s" 
+  `bash ~/.config/eww/scripts/day_countdown.sh 2025-11-17`)
 
-;; Clipboard Widget
-(defwidget clipboard-widget []
-  (box :class "clipboard-outer" :orientation "vertical" :space-evenly false
-    (label :class "clipboard-title" :text "Clipboard" :halign "center")
-    (scroll :height 550 :vscroll true
-      (box :class "clipboard-inner" :orientation "vertical" :space-evenly false
-        (for entry in clipboard-history
-          (button :class "clipboard-item"
-                  :onclick `echo '${entry}' | bash ~/.config/eww/scripts/clipboard_copy.sh`
-                  (label :class "clipboard-label" :text entry 
-                         :wrap "true" :limit-width 250 :halign "start")))))))
+;; Countdown Widget
+(defwidget countdown []
+  (box :class "countdown-box" 
+       :orientation "vertical" 
+       :space-evenly false 
+       :vexpand "false" 
+       :hexpand "false"
+    (label :class "countdown-title" 
+           :text "SSL renew" 
+           :halign "center")
+    (label :class "countdown-label" 
+           :halign "center" 
+           :wrap "true" 
+           :limit-width 200 
+           :text DAY_COUNTDOWN)))
 
-;; Clipboard Window
-(defwindow clipboard_window
+;; Countdown Window
+(defwindow countdown
   :monitor 0
-  :geometry (geometry :x "115px" :y "330" :width "300px" :height "600px")
+  :geometry (geometry :x "100px" :y "120px" :width "200px" :height "80px")
   :stacking "bg"
+  :reserve (struts :distance "80px" :side "top")
   :windowtype "dock"
   :wm-ignore false
-  (clipboard-widget))
+  (countdown))
 ```
 
-4. Add the styles from [clipboard manager widget/eww.scss](clipboard manager widget/eww.scss) to your Eww SCSS file.
+4. Add the styles from `simplecountdown/eww.scss` to your Eww SCSS file:
+```scss
+* {
+  all: unset;
+}
+
+.countdown-box {
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  padding: 1rem;
+  border-radius: 16px;
+}
+
+.countdown-title {
+  font-family: "Fira Code", monospace;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #424d5e;
+  margin-bottom: 5px;
+}
+
+.countdown-label {
+  font-family: "Fira Code", monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #a6e3a1;
+}
+```
 
 ## Usage
 
-1. Start the clipboard widget:
+### Starting the Widget
+
 ```bash
-eww open clipboard_window
+eww daemon
+eww open countdown
 ```
 
-2. Copy text as usual (Ctrl+C, right-click copy, etc.)
+### Setting Your Target Date
 
-3. Click any entry in the widget to restore it to your clipboard
+Edit the `defpoll` line in your `eww.yuck`:
 
-4. To close the widget:
+```yuck
+;; Change the date (YYYY-MM-DD format)
+(defpoll DAY_COUNTDOWN :interval "60s" 
+  `bash ~/.config/eww/scripts/day_countdown.sh 2025-12-31`)
+```
+
+### Changing the Title
+
+Modify the title text in the widget definition:
+
+```yuck
+(label :class "countdown-title" 
+       :text "Your Event Name"  ;; Change this
+       :halign "center")
+```
+
+### Creating Multiple Countdowns
+
+You can track multiple events by creating additional countdown widgets:
+
+```yuck
+;; Second countdown
+(defpoll DAY_COUNTDOWN1 :interval "60s" 
+  `bash ~/.config/eww/scripts/day_countdown.sh 2026-07-30`)
+
+(defwidget countdown1 []
+  (box :class "countdown-box" :orientation "vertical" :space-evenly false
+    (label :class "countdown-title" :text "cPanel renew" :halign "center")
+    (label :class "countdown-label" :halign "center" :text DAY_COUNTDOWN1)))
+
+(defwindow countdown1
+  :monitor 0
+  :geometry (geometry :x "100px" :y "220px" :width "200px" :height "80px")
+  :stacking "bg"
+  :windowtype "dock"
+  :wm-ignore false
+  (countdown1))
+```
+
+Then open both widgets:
 ```bash
-eww close clipboard_window
+eww open countdown
+eww open countdown1
 ```
 
 ## Configuration
 
-### Maximum History Items
-
-Edit [clipboard manager widget/scripts/clipboard_history.sh](clipboard manager widget/scripts/clipboard_history.sh):
-```bash
-MAX_ITEMS=40  # Change to your preferred number
-```
-
 ### Update Interval
 
-Modify the polling interval in your `eww.yuck`:
+Change how often the countdown updates:
+
 ```yuck
-(defpoll clipboard-history :interval "1s" ...)  # Change "1s" to your preference
+(defpoll DAY_COUNTDOWN :interval "60s" ...)  ;; Every 60 seconds
+;; or
+(defpoll DAY_COUNTDOWN :interval "3600s" ...) ;; Every hour (saves resources)
 ```
 
 ### Widget Position and Size
 
-Adjust in the `defwindow` geometry settings:
+Adjust the geometry in your window definition:
+
 ```yuck
-:geometry (geometry :x "115px" :y "330" :width "300px" :height "600px")
+:geometry (geometry :x "100px"   ;; X position from left
+                    :y "120px"   ;; Y position from top
+                    :width "200px" 
+                    :height "80px")
+```
+
+### Colors and Styling
+
+Customize in `eww.scss`:
+
+```scss
+.countdown-box {
+  background-color: #1e1e2e;  /* Box background */
+  border-radius: 16px;         /* Corner roundness */
+}
+
+.countdown-title {
+  color: #424d5e;              /* Title color */
+  font-size: 0.9rem;           /* Title size */
+}
+
+.countdown-label {
+  color: #a6e3a1;              /* Countdown number color (green) */
+  font-size: 1.2rem;           /* Number size */
+}
 ```
 
 ## File Structure
 
 ```
-clipboard manager widget/
-├── eww.scss              # Widget styles
+simplecountdown/
+├── eww.scss              # Widget styles (dark theme)
 ├── eww.yuck              # Widget configuration
 └── scripts/
-    ├── clipboard_copy.sh    # Copies text to system clipboard
-    └── clipboard_history.sh # Manages clipboard history
+    └── day_countdown.sh  # Countdown calculation script
 ```
 
 ## How It Works
 
-1. **[clipboard_history.sh](clipboard manager widget/scripts/clipboard_history.sh)** polls the system clipboard every second
-2. New clipboard content is base64-encoded and stored in `~/.config/eww/clipboard_history.b64`
-3. The script outputs a JSON array of decoded entries for Eww to display
-4. When you click an entry, **[clipboard_copy.sh](clipboard manager widget/scripts/clipboard_copy.sh)** restores it to the clipboard
+1. **day_countdown.sh** takes a target date as argument
+2. Calculates the difference between today and the target date
+3. Converts seconds to days
+4. Returns "X days left" or "Expired" if date has passed
+5. Eww polls the script every 60 seconds and updates the display
+
+## Script Details
+
+The `day_countdown.sh` script is simple and efficient:
+
+```bash
+#!/bin/bash
+# Usage: day_countdown.sh YYYY-MM-DD
+
+target="$1"
+today=$(date +%s)
+end=$(date -d "$target" +%s)
+diff=$(( (end - today) / 86400 ))
+
+if [ $diff -ge 0 ]; then
+    echo "$diff days left"
+else
+    echo "Expired"
+fi
+```
+
+## Real-World Examples
+
+Based on the example configuration:
+
+### SSL Certificate Renewal
+```yuck
+(defpoll DAY_COUNTDOWN :interval "60s" 
+  `bash ~/.config/eww/scripts/day_countdown.sh 2025-11-17`)
+```
+
+### cPanel License Renewal
+```yuck
+(defpoll DAY_COUNTDOWN1 :interval "60s" 
+  `bash ~/.config/eww/scripts/day_countdown.sh 2026-07-30`)
+```
+
+### Other Use Cases
+- Project deadlines
+- Domain renewals
+- Subscription expirations
+- Birthday reminders
+- Vacation countdowns
+- Exam dates
 
 ## Troubleshooting
 
-### Widget not showing clipboard entries
-- Ensure clipboard utilities are installed: `wl-clipboard`, `xclip`, or `xsel`
-- Check script permissions: `chmod +x ~/.config/eww/scripts/clipboard_*.sh`
-- Verify the history file is being created: `ls -la ~/.config/eww/clipboard_history.b64`
+### Widget not showing
+- Ensure Eww daemon is running: `eww daemon`
+- Check if window is open: `eww windows`
+- Verify script permissions: `chmod +x ~/.config/eww/scripts/day_countdown.sh`
 
-### Entries appear as `[object Object]` or empty
-- Install `jq` for proper JSON encoding: `sudo pacman -S jq` (Arch) or `sudo apt install jq` (Debian/Ubuntu)
-- Alternatively, ensure `python3` is installed
+### Wrong countdown value
+- Verify date format is YYYY-MM-DD: `2025-12-31`
+- Check system date is correct: `date`
+- Test script manually: `bash ~/.config/eww/scripts/day_countdown.sh 2025-12-31`
 
-### Widget position is wrong
-- Adjust the `:geometry` values in `eww.yuck` to match your screen layout
+### Font not displaying correctly
+- Install the font: `sudo pacman -S ttf-fira-code` (Arch) or equivalent
+- Change font in `eww.scss`:
+  ```scss
+  font-family: "JetBrains Mono", "monospace";
+  ```
 
-## Customization
+### Widget position wrong
+- Adjust `:geometry` values in `eww.yuck`
+- Try different `:stacking` values: `"fg"`, `"bg"`, `"overlay"`
 
-The widget uses Catppuccin Mocha colors by default. Customize in [eww.scss](clipboard manager widget/eww.scss):
+## Tips & Tricks
 
+### Auto-start on Login
+
+Add to your window manager config or `.xinitrc`:
+```bash
+eww daemon &
+eww open countdown &
+eww open countdown1 &
+```
+
+### Quick Toggle Script
+
+Create `~/.local/bin/toggle-countdown.sh`:
+```bash
+#!/bin/bash
+if eww windows | grep -q "countdown"; then
+  eww close countdown
+else
+  eww open countdown
+fi
+```
+
+### Color Schemes
+
+**Catppuccin Mocha (default)**:
+- Background: `#1e1e2e`
+- Title: `#424d5e`
+- Number: `#a6e3a1` (green)
+
+**Custom Blue Theme**:
 ```scss
-.clipboard-item {
-  background: #313244;  /* Item background */
-}
-
-.clipboard-item:hover {
-  background: #45475a;  /* Hover color */
-}
-
-.clipboard-label {
-  color: #f5e0dc;      /* Text color */
+.countdown-label {
+  color: #89b4fa;  /* Blue */
 }
 ```
+
+**Red Alert Theme** (for urgent deadlines):
+```scss
+.countdown-label {
+  color: #f38ba8;  /* Red */
+}
+```
+
+## Integration with Other Widgets
+
+This widget works alongside other Eww widgets. You can integrate it with:
+- Clock widget
+- Clipboard manager widget
+- System monitors
+- Weather widgets
 
 ## License
 
@@ -164,14 +351,16 @@ This project is open source and available under the MIT License.
 ## Credits
 
 - Built with [Eww](https://github.com/elkowar/eww) by elkowar
-- Inspired by the Catppuccin color scheme
+- Inspired by Catppuccin color scheme
+- Font: Fira Code / JetBrains Mono
 
 ## Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests at:
-https://github.com/84Ebi/eww/tree/clipboard-manager
+https://github.com/84Ebi/eww/tree/simpledaycountdown
 
 ---
 
-**Full source code**: [https://github.com/84Ebi/eww/tree/clipboard-manager](https://github.com/84Ebi/eww/tree/clipboard-manager)
+**Full source code**: [https://github.com/84Ebi/eww/tree/simpledaycountdown](https://github.com/84Ebi/eww/tree/simpledaycountdown)
 
+**Happy counting down! ⏰**
